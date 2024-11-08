@@ -3,10 +3,12 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import postRoutes from './routes/PostRoutes';
 
+
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = Number(process.env.PORT)  || 3000;
+const hostname = process.env.HOST!;
 
 // Middleware para parsear cuerpos JSON
 app.use(express.json());
@@ -20,6 +22,6 @@ mongoose.connect(process.env.MONGODB_URI as string)
 app.use('/api', postRoutes);
 
 // Iniciar el servidor
-app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
-});
+app.listen(port, hostname, () => {
+    console.log(`Servidor corriendo en http://${hostname}:${port}`);
+  });
