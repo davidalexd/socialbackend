@@ -1,7 +1,7 @@
 {
-  "name": "mi-api-ts",
+  "name": "social-post-api",
   "version": "1.0.0",
-  "description": "Una API REST con Express y TypeScript",
+  "description": "Social post api",
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node src/index.ts",
