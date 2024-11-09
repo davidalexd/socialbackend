@@ -1,27 +1,32 @@
-import express from 'express';
-import mongoose from 'mongoose';
+// src/index.ts
+
 import dotenv from 'dotenv';
-import postRoutes from './routes/PostRoutes';
-
-
 dotenv.config();
 
-const app = express();
-const port = Number(process.env.PORT)  || 3000;
-const hostname = process.env.HOST!;
+import express from 'express';
+import mongoose from 'mongoose';
+import postRoutes from './routes/PostRoutes';
+import commentRoutes from './routes/commentRoutes';
+import authRoutes from './auth/authRoutes';
+import { authenticateToken } from './auth/authMiddleware';
 
-// Middleware para parsear cuerpos JSON
+const app = express();
+const port = process.env.PORT || 3000;
+const mongoUri = process.env.MONGODB_URI;
+
+mongoose.connect(mongoUri as string)
+    .then(() => console.log('Conectado a MongoDB'))
+    .catch((error) => console.log('Error al conectar a MongoDB:', error));
+
 app.use(express.json());
 
-// Conectar a MongoDB
-mongoose.connect(process.env.MONGODB_URI as string)
-  .then(() => console.log('Conectado a MongoDB'))
-  .catch((error) => console.log('Error al conectar a MongoDB:', error));
+// Rutas de autenticación sin protección
+app.use('/auth', authRoutes);
 
-// Usar las rutas de post y comentarios
-app.use('/api', postRoutes);
+// Rutas protegidas
+app.use('/api', authenticateToken, postRoutes);
+app.use('/api', authenticateToken, commentRoutes);
 
-// Iniciar el servidor
-app.listen(port, hostname, () => {
-    console.log(`Servidor corriendo en http://${hostname}:${port}`);
-  });
+app.listen(port, () => {
+    console.log(`Servidor corriendo en http://localhost:${port}`);
+});
