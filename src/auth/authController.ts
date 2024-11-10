@@ -7,6 +7,35 @@ import User from '../models/User';
 
 const SECRET_KEY = process.env.SECRET_KEY || 'your_jwt_secret';
 
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Registrar un nuevo usuario
+ *     description: Crea una cuenta de usuario con un nombre de usuario, correo y contraseña.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *     responses:
+ *       201:
+ *         description: Usuario registrado exitosamente
+ *       400:
+ *         description: Error al registrar el usuario
+ */
 export const register = async (req: Request, res: Response) => {
     const { username, email, password } = req.body;
 
@@ -21,6 +50,36 @@ export const register = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Iniciar sesión
+ *     description: Inicia sesión de un usuario utilizando su correo electrónico y contraseña.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - email
+ *               - password
+ *     responses:
+ *       200:
+ *         description: Ingreso exitoso, retorna un token JWT
+ *       401:
+ *         description: Contraseña incorrecta
+ *       404:
+ *         description: Usuario no encontrado
+ *       400:
+ *         description: Error al iniciar sesión
+ */
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 

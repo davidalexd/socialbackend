@@ -3,9 +3,47 @@
 import { Request, Response } from 'express';
 import Post from '../models/Post';
 
+/**
+ * @swagger
+ * /posts:
+ *   post:
+ *     summary: Crea un nuevo post.
+ *     description: Crea un post y lo guarda en la base de datos.
+ *     parameters:
+ *       - in: body
+ *         name: post
+ *         description: Los datos del post a crear.
+ *         schema:
+ *           type: object
+ *           required:
+ *             - title
+ *             - content
+ *             - userId
+ *           properties:
+ *             title:
+ *               type: string
+ *               description: El título del post.
+ *             content:
+ *               type: string
+ *               description: El contenido del post.
+ *             userId:
+ *               type: string
+ *               description: El ID del usuario autenticado.
+ *     responses:
+ *       201:
+ *         description: Post creado exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       401:
+ *         description: Usuario no autenticado.
+ *       400:
+ *         description: Error al crear el post.
+ */
 export const createPost = async (req: Request, res: Response) => {
-    const { title, content } = req.body;
-    const userId = req.user?.userId;
+    const { title, content, user } = req.body;
+    const userId = user?.userId;
 
     if (!userId) {
         return res.status(401).json({ error: 'Usuario no autenticado' });
@@ -20,6 +58,24 @@ export const createPost = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /posts:
+ *   get:
+ *     summary: Obtiene todos los posts.
+ *     description: Devuelve una lista de todos los posts en la base de datos.
+ *     responses:
+ *       200:
+ *         description: Lista de posts.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Post'
+ *       500:
+ *         description: Error al obtener los posts.
+ */
 export const getAllPosts = async (req: Request, res: Response) => {
     try {
         const posts = await Post.find();
@@ -29,6 +85,31 @@ export const getAllPosts = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /posts/{postId}:
+ *   get:
+ *     summary: Obtiene un post por su ID.
+ *     description: Devuelve un post específico utilizando su ID.
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         description: El ID del post a obtener.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Post encontrado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       404:
+ *         description: Post no encontrado.
+ *       400:
+ *         description: Error al obtener el post.
+ */
 export const getPostById = async (req: Request, res: Response) => {
     const { postId } = req.params;
 
@@ -41,6 +122,31 @@ export const getPostById = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /posts/title/{title}:
+ *   get:
+ *     summary: Obtiene posts por título.
+ *     description: Busca posts que contengan el título especificado.
+ *     parameters:
+ *       - in: path
+ *         name: title
+ *         required: true
+ *         description: El título a buscar en los posts.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Posts encontrados.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Post'
+ *       400:
+ *         description: Error al obtener los posts.
+ */
 export const getPostsByTitle = async (req: Request, res: Response) => {
     const { title } = req.params;
 
@@ -52,6 +158,31 @@ export const getPostsByTitle = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /posts/author/{author}:
+ *   get:
+ *     summary: Obtiene posts por autor.
+ *     description: Devuelve todos los posts escritos por un autor específico.
+ *     parameters:
+ *       - in: path
+ *         name: author
+ *         required: true
+ *         description: El ID del autor.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Posts encontrados.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Post'
+ *       400:
+ *         description: Error al obtener los posts.
+ */
 export const getPostsByAuthor = async (req: Request, res: Response) => {
     const { author } = req.params;
 
@@ -63,10 +194,49 @@ export const getPostsByAuthor = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /posts/{postId}:
+ *   put:
+ *     summary: Actualiza un post por su ID.
+ *     description: Actualiza los datos de un post si el usuario autenticado es el autor.
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         description: El ID del post a actualizar.
+ *         schema:
+ *           type: string
+ *       - in: body
+ *         name: post
+ *         description: Los datos del post a actualizar.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             title:
+ *               type: string
+ *             content:
+ *               type: string
+ *             userId:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: Post actualizado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       404:
+ *         description: Post no encontrado.
+ *       403:
+ *         description: No autorizado para actualizar el post.
+ *       400:
+ *         description: Error al actualizar el post.
+ */
 export const updatePostById = async (req: Request, res: Response) => {
     const { postId } = req.params;
-    const { title, content } = req.body;
-    const userId = req.user?.userId;
+    const { title, content, user } = req.body;
+    const userId = user?.userId;
 
     try {
         const post = await Post.findById(postId);
@@ -87,9 +257,33 @@ export const updatePostById = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /posts/{postId}:
+ *   delete:
+ *     summary: Elimina un post por su ID.
+ *     description: Elimina un post específico si el usuario autenticado es el autor.
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         description: El ID del post a eliminar.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Post eliminado exitosamente.
+ *       404:
+ *         description: Post no encontrado.
+ *       403:
+ *         description: No autorizado para eliminar el post.
+ *       400:
+ *         description: Error al eliminar el post.
+ */
 export const deletePostById = async (req: Request, res: Response) => {
     const { postId } = req.params;
-    const userId = req.user?.userId;
+    const { user } = req.body;
+    const userId = user?.userId;
 
     try {
         const post = await Post.findById(postId);

@@ -4,10 +4,47 @@ import { Request, Response } from 'express';
 import Post from '../models/Post';
 import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * @swagger
+ * /posts/{postId}/comments:
+ *   post:
+ *     summary: Añade un comentario a un post
+ *     description: Solo usuarios autenticados pueden añadir comentarios
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         description: ID del post al que se agregará el comentario
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *               user:
+ *                 type: object
+ *                 properties:
+ *                   userId:
+ *                     type: string
+ *     responses:
+ *       201:
+ *         description: Comentario añadido con éxito
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autorizado
+ */
 export const addComment = async (req: Request, res: Response) => {
     const { postId } = req.params;
-    const { content } = req.body;
-    const userId = req.user?.userId; // Accede al userId del usuario autenticado
+    const { content, user } = req.body;
+    const userId = user?.userId; 
 
     if (!userId) {
         return res.status(401).json({ error: 'Usuario no autenticado' });
@@ -32,10 +69,48 @@ export const addComment = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /posts/{postId}/comments/{commentId}:
+ *   put:
+ *     summary: Actualiza un comentario existente
+ *     description: Solo usuarios autenticados pueden actualizar comentarios
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         description: ID del post al que pertenece el comentario
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: commentId
+ *         required: true
+ *         description: ID del comentario a actualizar
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Comentario actualizado con éxito
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autorizado
+ */
 export const updateCommentById = async (req: Request, res: Response) => {
     const { postId, commentId } = req.params;
-    const { content } = req.body;
-    const userId = req.user?.userId;
+    const { content, user } = req.body;
+    const userId = user?.userId;
 
     try {
         const post = await Post.findById(postId);
@@ -57,10 +132,37 @@ export const updateCommentById = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @swagger
+ * /posts/{postId}/comments/{commentId}:
+ *   delete:
+ *     summary: Elimina un comentario existente
+ *     description: Solo usuarios autenticados pueden eliminar comentarios
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         description: ID del post al que pertenece el comentario
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: commentId
+ *         required: true
+ *         description: ID del comentario a eliminar
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Comentario eliminado con éxito
+ *       401:
+ *         description: No autorizado
+ */
 export const deleteCommentById = async (req: Request, res: Response) => {
     const { postId, commentId } = req.params;
-    const userId = req.user?.userId;
-
+    const { user } = req.body;
+    const userId = user?.userId;
     try {
         const post = await Post.findById(postId);
         if (!post) return res.status(404).json({ message: 'Post no encontrado' });
@@ -82,6 +184,26 @@ export const deleteCommentById = async (req: Request, res: Response) => {
         res.status(400).json({ error: 'Error al eliminar el comentario' });
     }
 };
+
+/**
+ * @swagger
+ * /comments/author/{author}:
+ *   get:
+ *     summary: Obtiene comentarios de un autor específico
+ *     description: Recupera los comentarios hechos por un autor determinado
+ *     parameters:
+ *       - in: path
+ *         name: author
+ *         required: true
+ *         description: Nombre del autor
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de comentarios del autor
+ *       404:
+ *         description: No se encontraron comentarios
+ */
 export const getCommentsByAuthor = async (req: Request, res: Response) => {
     const { author } = req.params;
 
