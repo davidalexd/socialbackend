@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login } from './authController';
+import { register, login, getUserById } from './authController';
 
 const router = express.Router();
 
@@ -74,5 +74,40 @@ router.post('/register', register);
  *         description: Usuario no encontrado
  */
 router.post('/login', login);
+
+
+/**
+ * @swagger
+ * /auth/user/{id}:
+ *   get:
+ *     summary: Obtener detalles de un usuario
+ *     description: Devuelve los detalles de un usuario dado su ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Detalles del usuario obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *       404:
+ *         description: Usuario no encontrado
+ *       400:
+ *         description: Error al obtener los datos del usuario
+ */
+
+
+router.get('/user/:id', getUserById);
 
 export default router;

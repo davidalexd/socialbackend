@@ -2,7 +2,7 @@
 
 import { Request, Response } from 'express';
 import Post from '../models/Post';
-import { v4 as uuidv4 } from 'uuid';
+import mongoose from 'mongoose';
 
 /**
  * @swagger
@@ -44,7 +44,7 @@ import { v4 as uuidv4 } from 'uuid';
 export const addComment = async (req: Request, res: Response) => {
     const { postId } = req.params;
     const { content, user } = req.body;
-    const userId = user?.userId; 
+    const userId = user?.userId;
 
     if (!userId) {
         return res.status(401).json({ error: 'Usuario no autenticado' });
@@ -55,16 +55,19 @@ export const addComment = async (req: Request, res: Response) => {
         if (!post) return res.status(404).json({ message: 'Post no encontrado' });
 
         const newComment = {
-            commentId: uuidv4(),
+            postId,
             author: userId,
             content,
-            createdAt: new Date()
+            createdAt: new Date(),
         };
+        const addedComment = post.comments.create(newComment);
+        post.comments.push(addedComment);
 
-        post.comments.push(newComment);
         await post.save();
-        res.status(201).json(newComment);
+        console.log(addedComment)
+        res.status(201).json(addedComment);
     } catch (error) {
+        console.log(error);
         res.status(400).json({ error: 'Error al agregar el comentario' });
     }
 };
@@ -116,7 +119,8 @@ export const updateCommentById = async (req: Request, res: Response) => {
         const post = await Post.findById(postId);
         if (!post) return res.status(404).json({ message: 'Post no encontrado' });
 
-        const comment = post.comments.find(c => c.commentId === commentId);
+        const commentObjectId = new mongoose.Types.ObjectId(commentId);
+        const comment = post.comments.find(c => c._id.equals(commentObjectId))
         if (!comment) return res.status(404).json({ message: 'Comentario no encontrado' });
 
         if (comment.author !== userId) {
@@ -167,7 +171,8 @@ export const deleteCommentById = async (req: Request, res: Response) => {
         const post = await Post.findById(postId);
         if (!post) return res.status(404).json({ message: 'Post no encontrado' });
 
-        const commentIndex = post.comments.findIndex(c => c.commentId === commentId);
+        const commentObjectId = new mongoose.Types.ObjectId(commentId);
+        const commentIndex = post.comments.findIndex(c => c._id.equals(commentObjectId)); // Usar .equals para comparar ObjectId
         if (commentIndex === -1) return res.status(404).json({ message: 'Comentario no encontrado' });
 
         const comment = post.comments[commentIndex];

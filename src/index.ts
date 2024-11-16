@@ -1,10 +1,9 @@
-// src/index.ts
-
 import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
 import mongoose from 'mongoose';
+import cors from 'cors'; // Importa el paquete cors
 import postRoutes from './routes/PostRoutes';
 import commentRoutes from './routes/commentRoutes';
 import authRoutes from './auth/authRoutes';
@@ -21,6 +20,9 @@ mongoose.connect(mongoUri as string)
     .then(() => console.log('Conectado a MongoDB'))
     .catch((error) => console.log('Error al conectar a MongoDB:', error));
 
+// Habilitar CORS para todas las rutas
+app.use(cors()); // Aplica el middleware cors aquí
+
 app.use(express.json());
 
 // Configuración de Swagger
@@ -30,7 +32,7 @@ const swaggerOptions = {
     info: {
       title: 'API RED SOCIAL DE POSTS Y COMENTARIOS',
       version: '1.0.0',
-      description: 'API con Express,Mongo y Swagger',
+      description: 'API con Express, Mongo y Swagger',
     },
     components: {
       securitySchemes: {
@@ -59,7 +61,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/auth', authRoutes);
 
 // Rutas protegidas
-app.use('/api', authenticateToken, postRoutes);
+app.use('/api',postRoutes);
 app.use('/api', authenticateToken, commentRoutes);
 
 app.listen(port, () => {

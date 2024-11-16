@@ -94,11 +94,27 @@ export const login = async (req: Request, res: Response) => {
         const token = jwt.sign(
             { userId: String(user._id), username: user.username },
             SECRET_KEY,
-            { expiresIn: '1h' }
+            { expiresIn: '30d' }
         );
 
-        res.status(200).json({ token });
+        res.status(200).json({ token, userId: user._id });
     } catch (error) {
         res.status(400).json({ error: 'Error al iniciar sesión', details: error });
+    }
+};
+
+
+export const getUserById = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+        // Busca al usuario por ID
+        const user = await User.findById(id, 'username email'); // Solo devuelve `username` y `email`
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(400).json({ error: 'Error al obtener los datos del usuario', details: error });
     }
 };
